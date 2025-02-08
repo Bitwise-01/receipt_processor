@@ -5,6 +5,8 @@ test-coverage:
 	go test ./... -coverprofile=coverage.out
 	go tool cover -html coverage.out -o coverage.html
 
+
+### Running locally will become problematic because no redis
 # run: setup
 # 	echo "Starting service via terminal"
 # 	go run cmd/receipt_processor/main.go

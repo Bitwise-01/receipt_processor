@@ -30,7 +30,7 @@ func TestReceiptRepository_SaveAndGet(t *testing.T) {
 				PurchaseDate: "2022-01-01",
 				PurchaseTime: "13:01",
 				Total:        "35.35",
-				Points:       33, // assumed calculated points for test purposes
+				Points:       33,
 				Hash:         "hash1",
 				Items: []ItemModel{
 					{ShortDescription: "Item A", Price: "10.00"},
