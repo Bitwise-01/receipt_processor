@@ -34,7 +34,7 @@ func (r *Router) ProcessReceiptHandler(w http.ResponseWriter, req *http.Request)
 	var receipt service.ReceiptDTO
 	if err := json.Unmarshal(body, &receipt); err != nil {
 		log.Ctx(req.Context()).Error().Err(err).Msg("Invalid JSON in request body")
-		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
+		http.Error(w, "The receipt is invalid.", http.StatusBadRequest)
 		return
 	}
 
