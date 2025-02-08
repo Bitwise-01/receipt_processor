@@ -1,0 +1,11 @@
+database:
+  path: "receipt_processor.db"
+
+server:
+  port: "8080"
+
+redis:
+  addr: "redis:6379"
+  username: ""
+  password: ""
+  db: 0
