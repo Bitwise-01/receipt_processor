@@ -22,10 +22,10 @@ func (r *Router) ProcessReceiptHandler(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	// Read the request body
+	// Read the request body.
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to read request body")
+		log.Ctx(req.Context()).Error().Err(err).Msg("Failed to read request body")
 		http.Error(w, "The receipt is invalid.", http.StatusBadRequest)
 		return
 	}
@@ -33,14 +33,14 @@ func (r *Router) ProcessReceiptHandler(w http.ResponseWriter, req *http.Request)
 	// Unmarshal the JSON into a ReceiptDTO.
 	var receipt service.ReceiptDTO
 	if err := json.Unmarshal(body, &receipt); err != nil {
-		log.Error().Err(err).Msg("Invalid JSON in request body")
+		log.Ctx(req.Context()).Error().Err(err).Msg("Invalid JSON in request body")
 		http.Error(w, "Invalid JSON in request body", http.StatusBadRequest)
 		return
 	}
 
 	// Validate the receipt fields using regex rules.
 	if err := validateReceipt(receipt); err != nil {
-		log.Error().Err(err).Msg("Validation failed")
+		log.Ctx(req.Context()).Error().Err(err).Msg("Validation failed")
 		http.Error(w, "Validation failed: "+err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -48,7 +48,7 @@ func (r *Router) ProcessReceiptHandler(w http.ResponseWriter, req *http.Request)
 	// Delegate to the service layer to process the receipt.
 	id, err := r.receiptService.ProcessReceipt(req.Context(), receipt)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to process receipt")
+		log.Ctx(req.Context()).Error().Err(err).Msg("Failed to process receipt")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -57,7 +57,7 @@ func (r *Router) ProcessReceiptHandler(w http.ResponseWriter, req *http.Request)
 	response := map[string]string{"id": id}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Error().Err(err).Msg("Failed to write response")
+		log.Ctx(req.Context()).Error().Err(err).Msg("Failed to write response")
 	}
 }
 
@@ -69,7 +69,7 @@ func (r *Router) GetPointsHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Expecting URL format: /receipts/{id}/points
+	// Expecting URL format: /receipts/{id}/points.
 	parts := strings.Split(strings.Trim(req.URL.Path, "/"), "/")
 	if len(parts) != 3 || parts[0] != "receipts" || parts[2] != "points" {
 		http.NotFound(w, req)
@@ -77,7 +77,7 @@ func (r *Router) GetPointsHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	receiptID := parts[1]
 
-	// Validate receiptID using the regex pattern: "^\S+$"
+	// Validate receiptID using the regex pattern: "^\S+$".
 	idRegex := regexp.MustCompile(`^\S+$`)
 	if !idRegex.MatchString(receiptID) {
 		http.Error(w, "No receipt found for that ID.", http.StatusBadRequest)
@@ -87,7 +87,7 @@ func (r *Router) GetPointsHandler(w http.ResponseWriter, req *http.Request) {
 	// Retrieve the points via the service layer.
 	points, err := r.receiptService.GetPoints(req.Context(), receiptID)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to get points")
+		log.Ctx(req.Context()).Error().Err(err).Msg("Failed to get points")
 		http.Error(w, "No receipt found for that ID.", http.StatusNotFound)
 		return
 	}
@@ -96,13 +96,13 @@ func (r *Router) GetPointsHandler(w http.ResponseWriter, req *http.Request) {
 	response := map[string]int{"points": points}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Error().Err(err).Msg("Failed to write response")
+		log.Ctx(req.Context()).Error().Err(err).Msg("Failed to write response")
 	}
 }
 
 // validateReceipt checks the receipt fields against the regex patterns from the OpenAPI spec.
 func validateReceipt(receipt service.ReceiptDTO) error {
-	// Validate "retailer": pattern "^[\w\s\-\&]+$"
+	// Validate "retailer": pattern "^[\w\s\-\&]+$".
 	retailerRegex := regexp.MustCompile(`^[\w\s\-\&]+$`)
 	if !retailerRegex.MatchString(receipt.Retailer) {
 		return fmt.Errorf("invalid retailer format")
@@ -117,7 +117,7 @@ func validateReceipt(receipt service.ReceiptDTO) error {
 	if !timeRegex.MatchString(receipt.PurchaseTime) {
 		return fmt.Errorf("invalid purchaseTime format")
 	}
-	// Validate "total": pattern "^\d+\.\d{2}$"
+	// Validate "total": pattern "^\d+\.\d{2}$".
 	totalRegex := regexp.MustCompile(`^\d+\.\d{2}$`)
 	if !totalRegex.MatchString(receipt.Total) {
 		return fmt.Errorf("invalid total format")
